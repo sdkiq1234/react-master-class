@@ -188,7 +188,7 @@ function Coin() {
     ["tickers", coinId],
     () => fetchCoinTickers(coinId),
     {
-      refetchInterval: 5000,
+      refetchInterval: 30000,
     }
   );
   const loading = infoLoading || tickersLoading;
