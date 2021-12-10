@@ -26,6 +26,7 @@ const Container = styled.div`
 `;
 
 const Header = styled.header`
+  position: relative;
   height: 15vh;
   display: flex;
   justify-content: center;
@@ -59,7 +60,7 @@ const Description = styled.p`
 
 const Tabs = styled.div`
   display: grid;
-  grid-template-columns: repeat() (2, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   margin: 25px 0px;
   gap: 10px;
 `;
@@ -77,6 +78,20 @@ const Tab = styled.span<{ isActive: boolean }>`
   a {
     display: block;
     padding: 7px 0px;
+  }
+`;
+
+const Btn = styled.button`
+  all: unset;
+  position: absolute;
+  left: 10px;
+  top: 50px;
+  padding: 12px;
+  border: 1px solid white;
+  border-radius: 15%;
+  &:hover {
+    color: black;
+    background-color: white;
   }
 `;
 
@@ -185,6 +200,9 @@ function Coin() {
         </title>
       </Helmet>
       <Header>
+        <Link to={"/"}>
+          <Btn>Home</Btn>
+        </Link>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
@@ -228,7 +246,7 @@ function Coin() {
           </Tabs>
           <Routes>
             <Route path="chart" element={<Chart coinId={coinId} />} />
-            <Route path="price" element={<Price />} />
+            <Route path="price" element={<Price tickersData={tickersData} />} />
           </Routes>
         </>
       )}
