@@ -7,6 +7,15 @@ const Container = styled.div`
 `;
 
 const DataBox = styled.div`
+  @keyframes fadein {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  animation: fadein 3s;
   display: flex;
   margin: 0 auto;
   width: 90%;
