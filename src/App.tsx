@@ -3,8 +3,8 @@ import Router from "./Router";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { ThemeProvider } from "styled-components";
 import { light, dark } from "./theme";
-import { useState } from "react";
-import styled from "styled-components";
+import { useRecoilValue } from "recoil";
+import { isDarkAtom } from "./atoms";
 
 const GlobalStyle = createGlobalStyle`
 @import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
@@ -71,39 +71,10 @@ a {
 }
 `;
 
-const Wrapper = styled.div`
-  width: 100%;
-  height: 10%;
-  display: flex;
-  position: relative;
-`;
-
-const Button = styled.button`
-  all: unset;
-  display: block;
-  position: absolute;
-  width: 95px;
-  height: 25px;
-  font-size: 12px;
-  border: 2px solid red;
-  text-align: center;
-  background-color: blue;
-  color: white;
-  border-radius: 10px;
-  right: 200px;
-  top: 45px;
-`;
-
 function App() {
-  const [themeMode, setThemeMode] = useState("light");
-  const theme = themeMode === "light" ? light : dark;
-  const toggleTheme = () =>
-    setThemeMode(themeMode === "light" ? "dark" : "light");
+  const isDark = useRecoilValue(isDarkAtom);
   return (
-    <ThemeProvider theme={theme}>
-      <Wrapper>
-        <Button onClick={toggleTheme}>Theme change</Button>
-      </Wrapper>
+    <ThemeProvider theme={isDark ? dark : light}>
       <GlobalStyle />
       <Router />
       <ReactQueryDevtools initialIsOpen={true} />
