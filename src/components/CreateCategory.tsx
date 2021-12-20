@@ -1,32 +1,31 @@
 import { useForm } from "react-hook-form";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { categoryState, toDoState } from "../atoms";
+import { useSetRecoilState } from "recoil";
+import { newCategory } from "../atoms";
 
 interface IForm {
-  toDo: string;
+  category: string;
 }
 
-function CreateToDo() {
-  const setToDos = useSetRecoilState(toDoState);
-  const category = useRecoilValue(categoryState);
+function CreateCategory() {
+  const setCategory = useSetRecoilState(newCategory);
   const { register, handleSubmit, setValue } = useForm<IForm>();
-  const handleValid = ({ toDo }: IForm) => {
-    setToDos((oldToDos) => {
-      const newToDos = [{ text: toDo, id: Date.now(), category }, ...oldToDos];
-      localStorage.setItem("ToDos", JSON.stringify(newToDos));
-      return newToDos;
+  const handleValid = ({ category }: IForm) => {
+    setCategory((oldCategory) => {
+      const newCategory = [{ title: category, id: Date.now() }, ...oldCategory];
+      localStorage.setItem("Categories", JSON.stringify(newCategory));
+      return newCategory;
     });
-    setValue("toDo", "");
+    setValue("category", "");
   };
   return (
     <form onSubmit={handleSubmit(handleValid)}>
       <input
-        {...register("toDo", { required: "Please write a To Do" })}
-        placeholder="Write a to do"
+        {...register("category", { required: "Please write a new Category" })}
+        placeholder="Write a new Category"
       />
       <button>Add</button>
     </form>
   );
 }
 
-export default CreateToDo;
+export default CreateCategory;
