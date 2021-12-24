@@ -1,77 +1,159 @@
-import { createGlobalStyle } from "styled-components";
-import ToDoList from "./components/ToDoList";
+import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
+import { useForm } from "react-hook-form";
+import { useRecoilState } from "recoil";
+import styled from "styled-components";
+import { toDoState } from "./atoms";
+import Board from "./Components/Board";
 
-const GlobalStyle = createGlobalStyle`
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap');
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, menu, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-main, menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+`;
+
+const Boards = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+`;
+
+const Form = styled.form`
+  margin-bottom: 30px;
+  input {
+    width: 300px;
+    height: 100px;
+    background-color: whitesmoke;
+    border-radius: 25px;
+    text-align: center;
+    font-size: 25px;
+  }
+`;
+
+interface IForm {
+  boardName: string;
 }
-/* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
-footer, header, hgroup, main, menu, nav, section {
-  display: block;
-}
-/* HTML5 hidden-attribute fix for newer browsers */
-*[hidden] {
-    display: none;
-}
-body {
-  line-height: 1;
-}
-menu, ol, ul {
-  list-style: none;
-}
-blockquote, q {
-  quotes: none;
-}
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none;
-}
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-* {
-  box-sizing: border-box;
-}
-body {
-  font-weight:300;
-  font-family: 'Source Sans Pro', sans-serif;
-  background-color:${(props) => props.theme.bgColor};
-  color:${(props) => props.theme.textColor};
-  line-height: 1.2;
-}
-a {
-  text-decoration:none;
-  color: inherit;
-}
+
+const DeleteCard = styled.div`
+  display: flex;
+  position: absolute;
+  right: 200px;
+  top: 100px;
+  align-items: center;
+`;
+
+const Area = styled.div`
+  width: 150px;
+  height: 100px;
+  background-color: whitesmoke;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 25px;
+  span {
+    font-size: 25px;
+  }
 `;
 
 function App() {
+  const { register, setValue, handleSubmit } = useForm<IForm>();
+  const [toDos, setToDos] = useRecoilState(toDoState);
+  const onDragEnd = (info: DropResult) => {
+    const { destination, source } = info;
+    if (!destination) return console.log("!destination");
+    if (destination.droppableId === "deleteCard") {
+      setToDos((allBoards) => {
+        const boardCopy = [...allBoards[source.droppableId]];
+        boardCopy.splice(source.index, 1);
+        console.log("1111");
+        return {
+          ...allBoards,
+          [source.droppableId]: boardCopy,
+        };
+      });
+    }
+    if (destination?.droppableId === source.droppableId) {
+      setToDos((allBoards) => {
+        const boardCopy = [...allBoards[source.droppableId]];
+        const taskObj = boardCopy[source.index];
+        boardCopy.splice(source.index, 1);
+        boardCopy.splice(destination?.index, 0, taskObj);
+        return {
+          ...allBoards,
+          [source.droppableId]: boardCopy,
+        };
+      });
+    }
+    if (
+      destination?.droppableId !== "deleteCard" &&
+      destination?.droppableId !== source.droppableId
+    ) {
+      setToDos((allBoards) => {
+        const sourceCopy = [...allBoards[source.droppableId]];
+        const taskObj = sourceCopy[source.index];
+        const destinationCopy = [...allBoards[destination.droppableId]];
+        console.log(sourceCopy);
+        console.log(destinationCopy);
+        console.log(allBoards);
+        sourceCopy.splice(source.index, 1);
+        destinationCopy.splice(destination?.index, 0, taskObj);
+        return {
+          ...allBoards,
+          [source.droppableId]: sourceCopy,
+          [destination.droppableId]: destinationCopy,
+        };
+      });
+    }
+    // setToDos((oldToDos) => {
+    //   const toDosCopy = [...oldToDos];
+    //   toDosCopy.splice(source.index, 1);
+    //   toDosCopy.splice(destination?.index, 0, draggableId);
+    //   return toDosCopy;
+    // });
+  };
+  const onValid = ({ boardName }: IForm) => {
+    setToDos((allBoards) => {
+      if (allBoards[boardName]) {
+        return allBoards;
+      }
+      return {
+        ...allBoards,
+        [boardName]: [],
+      };
+    });
+    setValue("boardName", "");
+  };
   return (
-    <>
-      <GlobalStyle />
-      <ToDoList />
-    </>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <DeleteCard>
+        <Droppable droppableId={"deleteCard"}>
+          {(magic, info) => (
+            <Area ref={magic.innerRef} {...magic.droppableProps}>
+              <span>Delete Card</span>
+            </Area>
+          )}
+        </Droppable>
+      </DeleteCard>
+      <Wrapper>
+        <Form onSubmit={handleSubmit(onValid)}>
+          <input
+            {...register("boardName", { required: true })}
+            type="text"
+            placeholder="Put in board name"
+          />
+        </Form>
+        <Boards>
+          {Object.keys(toDos).map((boardId) => (
+            <Board boardId={boardId} key={boardId} toDos={toDos[boardId]} />
+          ))}
+        </Boards>
+      </Wrapper>
+    </DragDropContext>
   );
 }
 
